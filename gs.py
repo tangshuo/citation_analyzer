@@ -16,10 +16,25 @@ bib_params = "cit_fmt=0&export_selected_btn=Export+the+article+below&s=%s"
 
 def get_bibtex(bib_id):
     bib_id = urllib.quote(bib_id)
-    bib_req = urllib2.Request(bib_url, headers={'User-Agent' : useragent})
-    bib_data = urllib2.urlopen(bib_req, bib_params % bib_id).read()
+    #bib_req = urllib2.Request(bib_url, headers={'User-Agent' : useragent})
+    #bib_data = urllib2.urlopen(bib_req, bib_params % bib_id).read()
 
-    return bib_data
+    return bib_id
+
+class CitationSubPageParser(HTMLParser):
+    def __init__(self, subpage):
+        HTMLParser.__init__(self)
+        req = urllib2.Request("http://scholar.google.com%s" % subpage, \
+                              headers={'User-Agent' : useragent})
+        url_data = urllib2.urlopen(req).read()
+        self.feed(url_data)
+
+
+    def handle_starttag(self, tag, attrs):
+        for attr in attrs:
+            if len(attr) >= 2 and attr[0] == "onclick" and \
+               attr[1].startswith("return gs_ocit"):
+                print attr[1][22:34]
 
 # create a subclass and override the handler methods
 class CitationParser(HTMLParser):
@@ -38,6 +53,13 @@ class CitationParser(HTMLParser):
                attr[1].startswith("return gs_ocit"):
                 print attr[1][22:34]
 
+        if len(attrs) == 2 and \
+           len(attrs[0]) == 2 and attrs[0][0] == "class" and \
+           attrs[0][1] == "gs_nma" and \
+           len(attrs[1]) == 2 and attrs[1][0] == "href" and \
+           attrs[1][1].encode('ascii','ignore').find("/scholar?start=") >= 0:
+            CitationSubPageParser(attrs[1][1])
+
     def handle_endtag(self, tag):
         pass
 
@@ -54,7 +76,6 @@ class ProfileParser(HTMLParser):
                               headers={'User-Agent' : useragent})
         url_data = urllib2.urlopen(req).read()
         self.feed(url_data)
-
 
     def handle_starttag(self, tag, attrs):
         for attr in attrs:
