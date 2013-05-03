@@ -26,6 +26,7 @@ class CitationSubPageParser(HTMLParser):
 
     def __init__(self, subpage):
         HTMLParser.__init__(self)
+        self.bib_list = []
         req = urllib2.Request("http://scholar.google.com%s" % subpage, \
                               headers={'User-Agent' : useragent})
         url_data = urllib2.urlopen(req).read()
@@ -48,7 +49,7 @@ class CitationParser(HTMLParser):
 
     def __init__(self, cite_id):
         HTMLParser.__init__(self)
-        print self.cite_url % cite_id
+        self.bib_list = []
         req = urllib2.Request(self.cite_url % cite_id, \
                               headers={'User-Agent' : useragent})
         url_data = urllib2.urlopen(req).read()
