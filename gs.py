@@ -33,8 +33,14 @@ def get_bibtex_by_id(bib_id):
     return bib_data
 
 def analyse(filename):
+    print "============"
+    from bib import *
     bib_file = open(filename, 'r')
-    print bib_file.read()
+    data = clear_comments(bib_file.read())
+    bib = Bibparser(data)
+    bib.parse()
+    data = bib.json()
+    print data
     bib_file.close()
 
 class CitationSubPageParser(HTMLParser):
@@ -126,6 +132,6 @@ class ProfileParser(HTMLParser):
             analyse(filename)
 
 # instantiate the parser and fed it some HTML
-#ProfileParser(user)
-for filename in glob.glob("*.bib"):
-    analyse(filename)
+ProfileParser(user)
+#for filename in glob.glob("*.bib"):
+#    analyse(filename)
