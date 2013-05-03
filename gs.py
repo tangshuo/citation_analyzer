@@ -16,10 +16,13 @@ bib_params = "cit_fmt=0&export_selected_btn=Export+the+article+below&s=%s"
 
 def get_bibtex(bib_id):
     bib_id = urllib.quote(bib_id)
-    #bib_req = urllib2.Request(bib_url, headers={'User-Agent' : useragent})
-    #bib_data = urllib2.urlopen(bib_req, bib_params % bib_id).read()
+    bib_req = urllib2.Request(bib_url, headers={'User-Agent' : useragent})
+    bib_data = urllib2.urlopen(bib_req, bib_params % bib_id).read()
 
-    return bib_id
+    return bib_data
+
+def get_bibtex_by_id(bib_id):
+    return get_bibtex("%s:%s" % (user, bib_id))
 
 class CitationSubPageParser(HTMLParser):
     bib_list = []
@@ -70,7 +73,7 @@ class CitationParser(HTMLParser):
             self.bib_list.append(subpage.get_bib_list())
 
     def get_all_citations(self):
-        return self.bib_list;
+        return self.bib_list
 
 class ProfileParser(HTMLParser):
     profile_url = "http://scholar.google.com/citations?user=%s&hl=en"
@@ -94,8 +97,9 @@ class ProfileParser(HTMLParser):
                 elif attr[1].find("/scholar?oi=bibs&hl=en&") > 0:
                     idx = attr[1].find("cites=") + len("cites=")
                     cite_id = attr[1][idx:]
-                    citation = CitationParser(cite_id)
-                    print citation.get_all_citations()
+                    c_parser = CitationParser(cite_id)
+                    for citation in  c_parser.get_all_citations():
+                        print get_bibtex_by_id(citation)
 
 
 # instantiate the parser and fed it some HTML
