@@ -22,6 +22,8 @@ def get_bibtex(bib_id):
     return bib_id
 
 class CitationSubPageParser(HTMLParser):
+    bib_list = []
+
     def __init__(self, subpage):
         HTMLParser.__init__(self)
         req = urllib2.Request("http://scholar.google.com%s" % subpage, \
@@ -34,14 +36,19 @@ class CitationSubPageParser(HTMLParser):
         for attr in attrs:
             if len(attr) >= 2 and attr[0] == "onclick" and \
                attr[1].startswith("return gs_ocit"):
-                print attr[1][22:34]
+                self.bib_list.append(attr[1][22:34])
+
+    def get_bib_list(self):
+        return self.bib_list
 
 # create a subclass and override the handler methods
 class CitationParser(HTMLParser):
     cite_url = "http://scholar.google.com/scholar?oi=bibs&hl=en&cites=%s&num=20"
+    bib_list = []
 
     def __init__(self, cite_id):
         HTMLParser.__init__(self)
+        print self.cite_url % cite_id
         req = urllib2.Request(self.cite_url % cite_id, \
                               headers={'User-Agent' : useragent})
         url_data = urllib2.urlopen(req).read()
@@ -51,20 +58,18 @@ class CitationParser(HTMLParser):
         for attr in attrs:
             if len(attr) >= 2 and attr[0] == "onclick" and \
                attr[1].startswith("return gs_ocit"):
-                print attr[1][22:34]
+                self.bib_list.append(attr[1][22:34])
 
         if len(attrs) == 2 and \
            len(attrs[0]) == 2 and attrs[0][0] == "class" and \
            attrs[0][1] == "gs_nma" and \
            len(attrs[1]) == 2 and attrs[1][0] == "href" and \
            attrs[1][1].encode('ascii','ignore').find("/scholar?start=") >= 0:
-            CitationSubPageParser(attrs[1][1])
+            subpage = CitationSubPageParser(attrs[1][1])
+            self.bib_list.append(subpage.get_bib_list())
 
-    def handle_endtag(self, tag):
-        pass
-
-    def handle_data(self, data):
-        pass
+    def get_all_citations(self):
+        return self.bib_list;
 
 class ProfileParser(HTMLParser):
     profile_url = "http://scholar.google.com/citations?user=%s&hl=en"
@@ -88,7 +93,8 @@ class ProfileParser(HTMLParser):
                 elif attr[1].find("/scholar?oi=bibs&hl=en&") > 0:
                     idx = attr[1].find("cites=") + len("cites=")
                     cite_id = attr[1][idx:]
-                    CitationParser(cite_id)
+                    citation = CitationParser(cite_id)
+                    print citation.get_all_citations()
 
 
 # instantiate the parser and fed it some HTML
