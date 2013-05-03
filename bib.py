@@ -20,12 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
 
-""" Credit https://github.com/ptigas/bibpy """
+#Credit https://github.com/ptigas/bibpy
 
-import fileinput
 import re
 import json
-from pprint import pprint
 
 def clear_comments(data):
     """Return the bibtex content without comments"""
