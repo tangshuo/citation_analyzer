@@ -24,6 +24,7 @@ THE SOFTWARE.
 
 import re
 import json
+import collections
 
 def clear_comments(data):
     """Return the bibtex content without comments"""
@@ -55,7 +56,7 @@ class Bibparser() :
         self._next_token = self.tokenize().next
         self.hashtable = {}
         self.mode = None
-        self.records = {}
+        self.records = collections.OrderedDict()
         self.line = 1
 
         # compile some regexes
@@ -272,4 +273,4 @@ class Bibparser() :
 
     def json(self) :
         """Returns json formated records"""
-        return json.dumps({'items':self.records.values()})
+        return json.dumps(self.records.values())
